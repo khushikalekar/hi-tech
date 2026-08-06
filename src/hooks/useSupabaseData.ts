@@ -16,7 +16,8 @@ export function useProducts() {
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
-
+  console.log("Products:", data);
+  console.log("Error:", error);
       if (!mounted) return;
       if (error) {
         setError(error.message);
@@ -48,7 +49,8 @@ export function useServices() {
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
-
+  console.log("services:", data);
+  console.log("Error:", error);
       if (!mounted) return;
       if (error) {
         setError(error.message);

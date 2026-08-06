@@ -15,7 +15,7 @@ import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import { useAuth } from '@/context/AuthContext';
 import type { Page } from '@/types';
 
-const validPages: Page[] = ['home', 'about', 'products', 'services', 'reviews', 'gallery', 'contact'];
+const validPages: Page[] = ['home', 'about', 'products', 'services', 'reviews', 'contact'];
 
 type Route = Page | 'admin-login' | 'admin-dashboard';
 
@@ -105,8 +105,7 @@ export default function App() {
         return <ServicesPage />;
       case 'reviews':
         return <ReviewsPage />;
-      case 'gallery':
-        return <GalleryPage />;
+     
       case 'contact':
         return <ContactPage />;
       default:

@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: rememberMe ? undefined : { expiresIn: 86400 },
+    
     });
     return { error: error?.message ?? null };
   }, []);

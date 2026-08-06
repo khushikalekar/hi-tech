@@ -49,7 +49,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       <section className="relative bg-hero overflow-hidden">
         <div className="absolute inset-0 hero-overlay" />
         <div className="absolute inset-0 section-pattern opacity-30" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 lg:py-32">
+        <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 lg:py-32">
           <div className="max-w-3xl">
             <span className="badge glass text-white mb-5 animate-fade-in">
               <Sparkles className="h-4 w-4" />
@@ -264,7 +264,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="bg-gradient-to-br from-brand-600 to-brand-800 rounded-3xl p-8 md:p-14 text-center text-white relative overflow-hidden">
           <div className="absolute inset-0 section-pattern opacity-20" />
@@ -298,6 +298,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           </div>
         </div>
       </section>
+      */}
     </div>
   );
 }
