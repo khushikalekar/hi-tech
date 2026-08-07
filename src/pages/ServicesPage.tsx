@@ -183,30 +183,7 @@ export default function ServicesPage() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-700 py-16">
-        <div className="absolute inset-0 section-pattern opacity-10" />
 
-        <div className="relative max-w-5xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-white">
-            Need a Custom Cleaning Solution?
-          </h2>
-
-          <p className="mt-4 text-lg text-blue-100 max-w-2xl mx-auto">
-            Every property is unique. Our experts provide customized cleaning
-            plans for homes, offices, commercial spaces, hotels, hospitals,
-            industries and more.
-          </p>
-
-          <button
-            onClick={() => setBookingService('Custom Cleaning Service')}
-            className="mt-8 inline-flex items-center gap-3 rounded-xl bg-white px-8 py-4 text-brand-700 font-semibold shadow-xl hover:bg-slate-100 transition-all duration-300"
-          >
-            <CalendarCheck className="h-5 w-5" />
-            Book a Custom Service
-            <ArrowRight className="h-5 w-5" />
-          </button>
-        </div>
-      </section>
 
       {/* Booking Modal */}
       <ServiceBookingModal

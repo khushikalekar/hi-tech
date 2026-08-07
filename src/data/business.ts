@@ -3,9 +3,9 @@ export const businessInfo = {
   tagline:
     'Wholesale Cleaning Chemicals, Housekeeping Materials, Disposable Products & Professional Deep Cleaning Services',
   phone: '9322739595',
-  phoneDisplay: '+91 93227 39595',
+phoneDisplay: '+91 93227 39595',
   contactPhone: '9307675913',
-  contactPhoneDisplay: '+91 93076 75913',
+  contactPhoneDisplay: '+91 93227 39595 / +91 93076 75913',
   email: 'hitechsolutions290@gmail.com',
   hours: '9:00 AM – 9:00 PM',
   address: {
