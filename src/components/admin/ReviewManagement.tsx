@@ -38,12 +38,13 @@ export default function ReviewManagement() {
     fetchReviews();
   };
 
-  const filtered = reviews.filter((r) => r.source === 'customer' && r.status === filter);
-  const counts = {
-    pending: reviews.filter((r) => r.source === 'customer' && r.status === 'pending').length,
-    approved: reviews.filter((r) => r.source === 'customer' && r.status === 'approved').length,
-    rejected: reviews.filter((r) => r.source === 'customer' && r.status === 'rejected').length,
-  };
+ const filtered = reviews.filter((r) => r.status === filter);
+
+const counts = {
+  pending: reviews.filter((r) => r.status === 'pending').length,
+  approved: reviews.filter((r) => r.status === 'approved').length,
+  rejected: reviews.filter((r) => r.status === 'rejected').length,
+};
 
   const tabs: { id: FilterStatus; label: string; count: number }[] = [
     { id: 'pending', label: 'Pending', count: counts.pending },
