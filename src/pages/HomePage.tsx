@@ -62,8 +62,8 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   ];
 
   const heroStats = [
-    { value: '16+', label: 'Cleaning Services' },
-    { value: '20+', label: 'Products' },
+    { value: '40+', label: 'Cleaning Services' },
+    { value: '100+', label: 'Products' },
     { value: '9 AM–9 PM', label: 'Business Hours' },
     { value: '100%', label: 'Customer Focus' },
   ];

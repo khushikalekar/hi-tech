@@ -14,6 +14,7 @@ const navItems: { label: string; page: Page }[] = [
   { label: 'About', page: 'about' },
   { label: 'Products', page: 'products' },
   { label: 'Services', page: 'services' },
+  { label: 'Gallery', page: 'gallery' },
   { label: 'Reviews', page: 'reviews' },
   { label: 'Contact', page: 'contact' },
 ];
@@ -21,18 +22,25 @@ const navItems: { label: string; page: Page }[] = [
 export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
   const { totalItems, openCart } = useEnquiry();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
+
     window.addEventListener('scroll', onScroll);
+
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const handleNav = (page: Page) => {
     onNavigate(page);
     setMobileOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
   };
 
   return (
@@ -44,23 +52,23 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
             : 'bg-white/80 backdrop-blur-sm py-3'
         }`}
       >
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Logo */}
           <button
             onClick={() => handleNav('home')}
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-3 group shrink-0"
             aria-label="Hitech Solutions Home"
-          >
-            <img
+          ><img
               src={businessInfo.logo}
               alt="Hitech Solutions Logo"
               className="h-11 w-11 md:h-12 md:w-12 rounded-xl object-cover ring-2 ring-brand-100 group-hover:ring-brand-300 transition-all"
             />
-            <div className="text-left">
-              <span className="font-heading font-bold text-lg md:text-xl text-navy-900 block leading-tight">
+            <div className="flex flex-col text-left">
+              <span className="font-heading text-xl md:text-2xl font-bold text-navy-900 leading-tight group-hover:text-brand-600 transition-colors">
                 Hitech Solutions
               </span>
-              <span className="text-xs text-navy-500 hidden sm:block">
+
+              <span className="text-[10px] md:text-xs text-navy-500 font-medium tracking-wide">
                 Cleaning & Deep Cleaning Experts
               </span>
             </div>
@@ -86,12 +94,14 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
+            {/* Enquiry Cart */}
             <button
               onClick={openCart}
               className="relative p-2.5 rounded-xl text-navy-700 hover:bg-navy-50 transition-colors"
               aria-label="Enquiry cart"
             >
               <ShoppingCart className="h-5 w-5" />
+
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-brand-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {totalItems}
@@ -99,6 +109,7 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
               )}
             </button>
 
+            {/* Call Now */}
             <a
               href={callLink}
               className="hidden md:inline-flex btn-primary !px-4 !py-2.5 text-sm"
@@ -107,12 +118,18 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
               Call Now
             </a>
 
+            {/* Mobile menu button */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2.5 rounded-xl text-navy-700 hover:bg-navy-50 transition-colors"
               aria-label="Toggle menu"
+              aria-expanded={mobileOpen}
             >
-              {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </nav>
@@ -135,6 +152,7 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
                   </button>
                 </li>
               ))}
+
               <li className="pt-2">
                 <a href={callLink} className="btn-primary w-full">
                   <Phone className="h-4 w-4" />
@@ -145,6 +163,8 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
           </div>
         )}
       </header>
+
+      {/* Prevent page content from going underneath fixed navbar */}
       <div className="h-20" />
     </>
   );

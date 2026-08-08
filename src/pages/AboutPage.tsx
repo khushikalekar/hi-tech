@@ -20,6 +20,34 @@ interface AboutPageProps {
   onNavigate: (page: Page) => void;
 }
 
+/**
+ * Minute grid texture — a fine dot grid, rendered as a radial-gradient
+ * background rather than an SVG pattern. Kept deliberately subtle (small
+ * dots, low opacity) so it reads as material/depth rather than decoration.
+ * Reused across sections for a cohesive, premium surface treatment instead
+ * of one flat background.
+ */
+function DotGrid({ dark = false, fade = true }: { dark?: boolean; fade?: boolean }) {
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        backgroundImage: `radial-gradient(${
+          dark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)'
+        } 1px, transparent 1px)`,
+        backgroundSize: '26px 26px',
+        ...(fade
+          ? {
+              maskImage: 'radial-gradient(ellipse 90% 80% at 50% 30%, black 30%, transparent 100%)',
+              WebkitMaskImage:
+                'radial-gradient(ellipse 90% 80% at 50% 30%, black 30%, transparent 100%)',
+            }
+          : {}),
+      }}
+    />
+  );
+}
+
 export default function AboutPage({ onNavigate }: AboutPageProps) {
   const whyChooseUs = [
     { icon: ShieldCheck, title: 'Premium Quality', desc: 'We supply only high-quality, professional-grade cleaning products.' },
@@ -35,23 +63,31 @@ export default function AboutPage({ onNavigate }: AboutPageProps) {
       {/* Hero */}
       <section className="bg-hero relative overflow-hidden">
         <div className="absolute inset-0 hero-overlay" />
-        <div className="absolute inset-0 section-pattern opacity-30" />
+        <DotGrid dark />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-white animate-fade-in-up">
+          <span
+            className="badge bg-white/10 text-amber-200 border border-white/15 mb-4 animate-fade-in-up backdrop-blur-sm"
+          >
+            Shirdi, Maharashtra
+          </span>
+          <h1 className="font-heading text-4xl md:text-5xl font-bold text-white animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
             About Hitech Solutions
           </h1>
-          <p className="mt-4 text-lg text-navy-100 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <p className="mt-4 text-lg text-navy-100 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             Your trusted partner for wholesale cleaning products and professional deep cleaning services.
           </p>
         </div>
-        <svg className="w-full h-12 md:h-16" viewBox="0 0 1440 80" preserveAspectRatio="none" fill="white">
+        <svg className="w-full h-12 md:h-16 relative" viewBox="0 0 1440 80" preserveAspectRatio="none" fill="white">
           <path d="M0,40 C320,80 720,0 1440,40 L1440,80 L0,80 Z" />
         </svg>
       </section>
 
       {/* Who We Are */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 overflow-hidden">
+        <div className="hidden md:block absolute inset-0">
+          <DotGrid />
+        </div>
+        <div className="relative grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <span className="badge bg-brand-50 text-brand-700 mb-4">Who We Are</span>
             <h2 className="section-title mb-4">A Complete Cleaning Solutions Provider</h2>
@@ -73,35 +109,40 @@ export default function AboutPage({ onNavigate }: AboutPageProps) {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-brand-600 to-brand-800 rounded-2xl p-6 text-white text-center">
-              <Truck className="h-10 w-10 mx-auto mb-2" />
-              <p className="font-heading text-2xl font-bold">Wholesale</p>
-              <p className="text-sm text-brand-100">Cleaning Products</p>
+            <div className="group relative overflow-hidden bg-gradient-to-br from-brand-600 to-brand-800 rounded-2xl p-6 text-white text-center transition-transform duration-300 hover:-translate-y-1">
+              <DotGrid dark />
+              <Truck className="relative h-10 w-10 mx-auto mb-2" />
+              <p className="relative font-heading text-2xl font-bold">Wholesale</p>
+              <p className="relative text-sm text-brand-100">Cleaning Products</p>
             </div>
-            <div className="bg-gradient-to-br from-navy-800 to-navy-900 rounded-2xl p-6 text-white text-center">
-              <Sparkles className="h-10 w-10 mx-auto mb-2" />
-              <p className="font-heading text-2xl font-bold">Deep</p>
-              <p className="text-sm text-navy-200">Cleaning Services</p>
+            <div className="group relative overflow-hidden bg-gradient-to-br from-navy-800 to-navy-900 rounded-2xl p-6 text-white text-center transition-transform duration-300 hover:-translate-y-1">
+              <DotGrid dark />
+              <Sparkles className="relative h-10 w-10 mx-auto mb-2" />
+              <p className="relative font-heading text-2xl font-bold">Deep</p>
+              <p className="relative text-sm text-navy-200">Cleaning Services</p>
             </div>
-            <div className="bg-gradient-to-br from-navy-800 to-navy-900 rounded-2xl p-6 text-white text-center">
-              <ShieldCheck className="h-10 w-10 mx-auto mb-2" />
-              <p className="font-heading text-2xl font-bold">Premium</p>
-              <p className="text-sm text-navy-200">Quality Assured</p>
+            <div className="group relative overflow-hidden bg-gradient-to-br from-navy-800 to-navy-900 rounded-2xl p-6 text-white text-center transition-transform duration-300 hover:-translate-y-1">
+              <DotGrid dark />
+              <ShieldCheck className="relative h-10 w-10 mx-auto mb-2" />
+              <p className="relative font-heading text-2xl font-bold">Premium</p>
+              <p className="relative text-sm text-navy-200">Quality Assured</p>
             </div>
-            <div className="bg-gradient-to-br from-brand-600 to-brand-800 rounded-2xl p-6 text-white text-center">
-              <Users className="h-10 w-10 mx-auto mb-2" />
-              <p className="font-heading text-2xl font-bold">B2B & B2C</p>
-              <p className="text-sm text-brand-100">All Welcome</p>
+            <div className="group relative overflow-hidden bg-gradient-to-br from-brand-600 to-brand-800 rounded-2xl p-6 text-white text-center transition-transform duration-300 hover:-translate-y-1">
+              <DotGrid dark />
+              <Users className="relative h-10 w-10 mx-auto mb-2" />
+              <p className="relative font-heading text-2xl font-bold">B2B & B2C</p>
+              <p className="relative text-sm text-brand-100">All Welcome</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Mission & Vision */}
-      <section className="bg-navy-50 py-16 md:py-20 section-pattern">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-navy-50 py-16 md:py-20 overflow-hidden">
+        <DotGrid />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="card p-8">
+            <div className="card p-8 relative overflow-hidden border-t-2 border-t-brand-500">
               <div className="inline-flex p-3 rounded-2xl bg-brand-50 text-brand-600 mb-4">
                 <Target className="h-7 w-7" />
               </div>
@@ -110,7 +151,7 @@ export default function AboutPage({ onNavigate }: AboutPageProps) {
                 To provide high-quality cleaning products and professional deep cleaning services at competitive wholesale prices, helping our customers maintain clean, hygienic, and healthy spaces — whether at home, at work, or in commercial and industrial environments.
               </p>
             </div>
-            <div className="card p-8">
+            <div className="card p-8 relative overflow-hidden border-t-2 border-t-navy-700">
               <div className="inline-flex p-3 rounded-2xl bg-navy-100 text-navy-700 mb-4">
                 <Eye className="h-7 w-7" />
               </div>
@@ -124,22 +165,25 @@ export default function AboutPage({ onNavigate }: AboutPageProps) {
       </section>
 
       {/* Why Choose Us */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="text-center mb-12">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 overflow-hidden">
+        <div className="hidden lg:block absolute inset-0">
+          <DotGrid />
+        </div>
+        <div className="relative text-center mb-12">
           <span className="badge bg-brand-50 text-brand-700 mb-4">Why Choose Us</span>
           <h2 className="section-title">The Hitech Solutions Advantage</h2>
           <p className="section-subtitle mt-3 max-w-2xl mx-auto">
             We combine quality products with professional service to deliver complete cleaning solutions.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="relative grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {whyChooseUs.map((w, i) => (
             <div
               key={w.title}
-              className="card-hover p-6 animate-fade-in-up"
+              className="card-hover p-6 animate-fade-in-up group"
               style={{ animationDelay: `${i * 0.08}s` }}
             >
-              <div className="inline-flex p-3 rounded-xl bg-brand-50 text-brand-600 mb-4">
+              <div className="inline-flex p-3 rounded-xl bg-brand-50 text-brand-600 mb-4 transition-colors duration-300 group-hover:bg-brand-600 group-hover:text-white">
                 <w.icon className="h-6 w-6" />
               </div>
               <h3 className="font-heading font-semibold text-lg text-navy-900 mb-2">{w.title}</h3>
@@ -150,8 +194,9 @@ export default function AboutPage({ onNavigate }: AboutPageProps) {
       </section>
 
       {/* Business Hours & Contact */}
-      <section className="bg-navy-50 py-16 md:py-20 section-pattern">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-navy-50 py-16 md:py-20 overflow-hidden">
+        <DotGrid />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-6">
             {/* Hours */}
             <div className="card p-8">

@@ -15,7 +15,15 @@ import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import { useAuth } from '@/context/AuthContext';
 import type { Page } from '@/types';
 
-const validPages: Page[] = ['home', 'about', 'products', 'services', 'reviews', 'contact'];
+const validPages: Page[] = [
+  'home',
+  'about',
+  'products',
+  'services',
+  'gallery',
+  'reviews',
+  'contact',
+];
 
 type Route = Page | 'admin-login' | 'admin-dashboard';
 
@@ -101,11 +109,15 @@ export default function App() {
         return <AboutPage onNavigate={handleNavigate} />;
       case 'products':
         return <ProductsPage />;
-      case 'services':
-        return <ServicesPage />;
-      case 'reviews':
-        return <ReviewsPage />;
-     
+   case 'services':
+  return <ServicesPage />;
+
+case 'gallery':
+  return <GalleryPage />;
+
+case 'reviews':
+  return <ReviewsPage />;
+
       case 'contact':
         return <ContactPage />;
       default:

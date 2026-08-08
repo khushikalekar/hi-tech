@@ -1,4 +1,11 @@
-export type Page = 'home' | 'about' | 'products' | 'services' | 'reviews' | 'contact';
+export type Page =
+  | 'home'
+  | 'about'
+  | 'products'
+  | 'services'
+  | 'gallery'
+  | 'reviews'
+  | 'contact';
 
 export interface EnquiryItem {
   id: string;
