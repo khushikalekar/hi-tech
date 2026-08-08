@@ -11,16 +11,38 @@ export default function ReviewManagement() {
   const [filter, setFilter] = useState<FilterStatus>('pending');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const fetchReviews = async () => {
+const fetchReviews = async () => {
+  console.log('1. fetchReviews started');
+
+  setLoading(true);
+
+  try {
+    console.log('2. Sending request to Supabase...');
+
     const { data, error } = await supabase
       .from('reviews')
       .select('*')
       .order('created_at', { ascending: false });
-    if (!error && data) {
-      setReviews(data as Review[]);
+
+    console.log('3. Supabase response received');
+    console.log('DATA:', data);
+    console.log('ERROR:', error);
+
+    if (error) {
+      console.error('Supabase reviews error:', error);
+      setReviews([]);
+      return;
     }
+
+    setReviews((data ?? []) as Review[]);
+  } catch (err) {
+    console.error('FETCH REVIEWS CRASHED:', err);
+    setReviews([]);
+  } finally {
+    console.log('4. Setting loading to false');
     setLoading(false);
-  };
+  }
+};
 
   useEffect(() => {
     fetchReviews();
@@ -38,12 +60,13 @@ export default function ReviewManagement() {
     fetchReviews();
   };
 
-  const filtered = reviews.filter((r) => r.source === 'customer' && r.status === filter);
-  const counts = {
-    pending: reviews.filter((r) => r.source === 'customer' && r.status === 'pending').length,
-    approved: reviews.filter((r) => r.source === 'customer' && r.status === 'approved').length,
-    rejected: reviews.filter((r) => r.source === 'customer' && r.status === 'rejected').length,
-  };
+const filtered = reviews.filter((r) => r.status === filter);
+
+const counts = {
+  pending: reviews.filter((r) => r.status === 'pending').length,
+  approved: reviews.filter((r) => r.status === 'approved').length,
+  rejected: reviews.filter((r) => r.status === 'rejected').length,
+};
 
   const tabs: { id: FilterStatus; label: string; count: number }[] = [
     { id: 'pending', label: 'Pending', count: counts.pending },

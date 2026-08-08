@@ -14,7 +14,7 @@ export default function TestimonialManagement() {
     const { data, error } = await supabase
       .from('reviews')
       .select('*')
-      .eq('source', 'manual')
+
       .order('created_at', { ascending: false });
     if (!error && data) {
       setTestimonials(data as Review[]);
