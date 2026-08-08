@@ -886,7 +886,7 @@ export default function CleaningPreloader({
         {/* Brand */}
         <div className="preloader-brand">
           <h1>
-            CLEAN<span>PRO</span>
+            Hitech<span>Solutions</span>
           </h1>
 
           <p>
