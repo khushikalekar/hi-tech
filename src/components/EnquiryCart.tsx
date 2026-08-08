@@ -1,44 +1,87 @@
 import { useState } from 'react';
-import { X, Plus, Minus, Trash2, Send, MessageCircle, User, Phone, MapPin, FileText, Loader2 } from 'lucide-react';
+import {
+  X,
+  Plus,
+  Minus,
+  Trash2,
+  Send,
+  MessageCircle,
+  User,
+  Phone,
+  MapPin,
+  FileText,
+  Loader2,
+} from 'lucide-react';
+
 import { useEnquiry } from '@/context/EnquiryContext';
 import { whatsappLink, businessInfo } from '@/data/business';
 import { supabase } from '@/lib/supabase';
 
 export default function EnquiryCart() {
-  const { items, isOpen, closeCart, removeItem, updateQuantity, clearCart } = useEnquiry();
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
+  const {
+    items,
+    isOpen,
+    closeCart,
+    removeItem,
+    updateQuantity,
+    clearCart,
+  } = useEnquiry();
 
-  if (!isOpen) return null;
+  // ALL hooks must be declared before any conditional return
+  const [showForm, setShowForm] = useState(false);
+
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    notes: '',
+  });
 
   const [submitting, setSubmitting] = useState(false);
 
+  // Conditional return AFTER all hooks
+  if (!isOpen) return null;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (submitting) return;
+
     setSubmitting(true);
 
-    // Save to database
-    await supabase.from('enquiries').insert({
-      customer_name: form.name,
-      phone: form.phone,
-      address: form.address,
-      notes: form.notes || null,
-      items: items.map((i) => ({
-        productName: i.productName,
-        size: i.size,
-        variant: i.variant,
-        quantity: i.quantity,
-      })),
-      status: 'new',
-    });
+    try {
+      // Save enquiry to database
+      const { error } = await supabase.from('enquiries').insert({
+        customer_name: form.name,
+        phone: form.phone,
+        address: form.address,
+        notes: form.notes || null,
+        items: items.map((i) => ({
+          productName: i.productName,
+          size: i.size,
+          variant: i.variant,
+          quantity: i.quantity,
+        })),
+        status: 'new',
+      });
 
-    // Also open WhatsApp
-    const lines = items.map(
-      (i) =>
-        `${i.productName}\n  Size: ${i.size}\n  Variant: ${i.variant}\n  Quantity: ${i.quantity}`,
-    ).join('\n\n');
+      if (error) {
+        console.error('Failed to save enquiry:', error);
+        throw error;
+      }
 
-    const message = `Hello Hitech Solutions,
+      // Build WhatsApp message
+      const lines = items
+        .map(
+          (i) =>
+            `${i.productName}\n` +
+            `  Size: ${i.size}\n` +
+            `  Variant: ${i.variant}\n` +
+            `  Quantity: ${i.quantity}`,
+        )
+        .join('\n\n');
+
+      const message = `Hello Hitech Solutions,
 
 I would like to enquire about:
 
@@ -57,35 +100,65 @@ Additional Notes:
 ${form.notes || 'None'}
 
 Please provide availability.`;
-    window.open(whatsappLink(message), '_blank');
-    clearCart();
-    setShowForm(false);
-    setForm({ name: '', phone: '', address: '', notes: '' });
-    closeCart();
-    setSubmitting(false);
+
+      // Open WhatsApp
+      window.open(whatsappLink(message), '_blank');
+
+      // Reset cart/form
+      clearCart();
+
+      setShowForm(false);
+
+      setForm({
+        name: '',
+        phone: '',
+        address: '',
+        notes: '',
+      });
+
+      closeCart();
+    } catch (error) {
+      console.error('Enquiry submission failed:', error);
+
+      alert(
+        'Failed to submit your enquiry. Please try again.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const inputClass = 'w-full pl-11 pr-4 py-3 border border-navy-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all text-navy-800 placeholder-navy-400 bg-white';
+  const inputClass =
+    'w-full pl-11 pr-4 py-3 border border-navy-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all text-navy-800 placeholder-navy-400 bg-white';
 
   return (
-    <div className="fixed inset-0 z-[60] flex justify-end modal-backdrop" onClick={closeCart}>
-      <div className="absolute inset-0 bg-navy-900/60 backdrop-blur-sm" />
+    <div
+      className="fixed inset-0 z-50 bg-black/40"
+      onClick={closeCart}
+    >
       <div
-        className="relative bg-white w-full max-w-md h-full shadow-strong flex flex-col animate-slide-in-right"
+        className="relative ml-auto bg-white w-full max-w-md h-full shadow-strong flex flex-col animate-slide-in-right"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-navy-100 bg-navy-900 text-white">
-          <h3 className="font-heading font-bold text-lg flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-emerald-400" />
-            Enquiry Cart ({items.length})
-          </h3>
+        <div className="flex items-center justify-between p-5 border-b border-navy-100">
+          <div>
+            <h2 className="text-lg font-bold text-navy-900">
+              Enquiry Cart
+            </h2>
+
+            <p className="text-sm text-navy-500">
+              {items.length}{' '}
+              {items.length === 1 ? 'item' : 'items'}
+            </p>
+          </div>
+
           <button
             onClick={closeCart}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-            aria-label="Close cart"
+            className="p-2 rounded-lg hover:bg-navy-50 transition-colors"
+            aria-label="Close enquiry cart"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5 text-navy-600" />
           </button>
         </div>
 
@@ -96,9 +169,14 @@ Please provide availability.`;
               <div className="p-4 rounded-full bg-navy-50 mb-4">
                 <MessageCircle className="h-10 w-10 text-navy-300" />
               </div>
-              <p className="font-semibold text-navy-700">Your enquiry cart is empty</p>
+
+              <p className="font-semibold text-navy-700">
+                Your enquiry cart is empty
+              </p>
+
               <p className="text-sm text-navy-500 mt-1">
-                Add products from the Products page to start an enquiry.
+                Add products from the Products page to start an
+                enquiry.
               </p>
             </div>
           ) : (
@@ -110,11 +188,15 @@ Please provide availability.`;
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-semibold text-navy-900">{item.productName}</h4>
+                      <h4 className="font-semibold text-navy-900">
+                        {item.productName}
+                      </h4>
+
                       <p className="text-sm text-navy-500 mt-0.5">
                         Size: {item.size} · Variant: {item.variant}
                       </p>
                     </div>
+
                     <button
                       onClick={() => removeItem(item.id)}
                       className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
@@ -123,19 +205,26 @@ Please provide availability.`;
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
+
                   <div className="flex items-center gap-3 mt-3">
                     <button
-                      onClick={() => updateQuantity(item.id, -1)}
+                      onClick={() =>
+                        updateQuantity(item.id, -1)
+                      }
                       className="p-1.5 rounded-lg border border-navy-200 hover:bg-navy-100 transition-colors"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="h-4 w-4" />
                     </button>
+
                     <span className="font-semibold text-navy-900 w-8 text-center">
                       {item.quantity}
                     </span>
+
                     <button
-                      onClick={() => updateQuantity(item.id, 1)}
+                      onClick={() =>
+                        updateQuantity(item.id, 1)
+                      }
                       className="p-1.5 rounded-lg border border-navy-200 hover:bg-navy-100 transition-colors"
                       aria-label="Increase quantity"
                     >
@@ -160,65 +249,116 @@ Please provide availability.`;
                 Proceed to Enquiry
               </button>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-3"
+              >
+                {/* Name */}
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-navy-400" />
+
                   <input
                     type="text"
                     required
                     placeholder="Your Name"
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        name: e.target.value,
+                      })
+                    }
                     className={inputClass}
                   />
                 </div>
+
+                {/* Phone */}
                 <div className="relative">
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-navy-400" />
+
                   <input
                     type="tel"
                     required
                     placeholder="Mobile Number"
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        phone: e.target.value,
+                      })
+                    }
                     className={inputClass}
                   />
                 </div>
+
+                {/* Address */}
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-3.5 h-5 w-5 text-navy-400" />
+
                   <textarea
                     required
                     placeholder="Address"
                     rows={2}
                     value={form.address}
-                    onChange={(e) => setForm({ ...form, address: e.target.value })}
-                    className={inputClass + ' resize-none'}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        address: e.target.value,
+                      })
+                    }
+                    className={`${inputClass} resize-none`}
                   />
                 </div>
+
+                {/* Notes */}
                 <div className="relative">
                   <FileText className="absolute left-3.5 top-3.5 h-5 w-5 text-navy-400" />
+
                   <textarea
                     placeholder="Additional Notes (optional)"
                     rows={2}
                     value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    className={inputClass + ' resize-none'}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        notes: e.target.value,
+                      })
+                    }
+                    className={`${inputClass} resize-none`}
                   />
                 </div>
+
+                {/* Buttons */}
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="btn-ghost flex-1"
+                    disabled={submitting}
+                    className="btn-ghost flex-1 disabled:opacity-60"
                   >
                     Back
                   </button>
-                  <button type="submit" disabled={submitting} className="btn-whatsapp flex-1 disabled:opacity-60">
-                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                    {submitting ? 'Sending...' : 'Send Enquiry'}
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="btn-whatsapp flex-1 disabled:opacity-60"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Send className="h-5 w-5" />
+                    )}
+
+                    {submitting
+                      ? 'Sending...'
+                      : 'Send Enquiry'}
                   </button>
                 </div>
+
                 <p className="text-xs text-navy-500 text-center">
-                  Enquiry will be sent to {businessInfo.phoneDisplay}
+                  Enquiry will be sent to{' '}
+                  {businessInfo.phoneDisplay}
                 </p>
               </form>
             )}
