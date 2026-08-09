@@ -4,7 +4,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FloatingActions from '@/components/FloatingActions';
 import EnquiryCart from '@/components/EnquiryCart';
-
 import CleaningPreloader from '@/components/CleaningPreloader';
 
 import HomePage from '@/pages/HomePage';
@@ -35,7 +34,7 @@ type Route = Page | 'admin-login' | 'admin-dashboard';
 
 function getRoute(): Route {
   const path = window.location.pathname
-    .replace(/^\//, '')
+    .replace(/^\/+/, '')
     .toLowerCase();
 
   if (path === 'admin' || path === 'admin/') {
@@ -48,15 +47,13 @@ function getRoute(): Route {
 
   const page = path.split('/')[0] as Page;
 
-  return validPages.includes(page)
-    ? page
-    : 'home';
+  return validPages.includes(page) ? page : 'home';
 }
 
 export default function App() {
   const { user, loading } = useAuth();
 
-  const [route, setRoute] = useState<Route>(getRoute());
+  const [route, setRoute] = useState<Route>(() => getRoute());
 
   // ==========================================
   // PRELOADER
@@ -64,10 +61,23 @@ export default function App() {
 
   const [showPreloader, setShowPreloader] = useState(true);
 
+  /**
+   * Hide the initial preloader as soon as React
+   * has mounted the application.
+   *
+   * This prevents the preloader animation from
+   * delaying the actual website.
+   */
   useEffect(() => {
-    document.body.style.overflow = showPreloader
-      ? 'hidden'
-      : '';
+    const frame = requestAnimationFrame(() => {
+      setShowPreloader(false);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = showPreloader ? 'hidden' : '';
 
     return () => {
       document.body.style.overflow = '';
@@ -80,20 +90,18 @@ export default function App() {
 
   useEffect(() => {
     const onPopState = () => {
-      setShowPreloader(true);
       setRoute(getRoute());
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'instant',
+      });
     };
 
-    window.addEventListener(
-      'popstate',
-      onPopState
-    );
+    window.addEventListener('popstate', onPopState);
 
     return () => {
-      window.removeEventListener(
-        'popstate',
-        onPopState
-      );
+      window.removeEventListener('popstate', onPopState);
     };
   }, []);
 
@@ -101,39 +109,30 @@ export default function App() {
   // PUBLIC NAVIGATION
   // ==========================================
 
-  const handleNavigate = useCallback(
-    (p: Page) => {
-      setShowPreloader(true);
+  const handleNavigate = useCallback((page: Page) => {
+    window.history.pushState({}, '', `/${page}`);
 
-      window.history.pushState(
-        {},
-        '',
-        `/${p}`
-      );
+    setRoute(page);
 
-      setRoute(p);
-
-      window.scrollTo({
-        top: 0,
-      });
-    },
-    []
-  );
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant',
+    });
+  }, []);
 
   // ==========================================
   // ADMIN LOGIN
   // ==========================================
 
   const goToAdmin = useCallback(() => {
-    setShowPreloader(true);
-
-    window.history.pushState(
-      {},
-      '',
-      '/admin'
-    );
+    window.history.pushState({}, '', '/admin');
 
     setRoute('admin-login');
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant',
+    });
   }, []);
 
   // ==========================================
@@ -141,15 +140,14 @@ export default function App() {
   // ==========================================
 
   const goToDashboard = useCallback(() => {
-    setShowPreloader(true);
-
-    window.history.pushState(
-      {},
-      '',
-      '/admin/dashboard'
-    );
+    window.history.pushState({}, '', '/admin/dashboard');
 
     setRoute('admin-dashboard');
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant',
+    });
   }, []);
 
   // ==========================================
@@ -157,29 +155,23 @@ export default function App() {
   // ==========================================
 
   const goToSite = useCallback(() => {
-    setShowPreloader(true);
-
-    window.history.pushState(
-      {},
-      '',
-      '/home'
-    );
+    window.history.pushState({}, '', '/home');
 
     setRoute('home');
 
     window.scrollTo({
       top: 0,
+      behavior: 'instant',
     });
   }, []);
 
   // ==========================================
-  // PRELOADER
+  // INITIAL PRELOADER
   // ==========================================
 
   if (showPreloader) {
     return (
       <CleaningPreloader
-        key={route}
         onComplete={() => {
           setShowPreloader(false);
         }}
@@ -193,7 +185,7 @@ export default function App() {
 
   if (route === 'admin-login') {
     if (loading) {
-      return <></>;
+      return null;
     }
 
     if (user) {
@@ -215,7 +207,7 @@ export default function App() {
 
   if (route === 'admin-dashboard') {
     if (loading) {
-      return <></>;
+      return null;
     }
 
     if (!user) {
@@ -223,9 +215,11 @@ export default function App() {
       return null;
     }
 
-    return <AdminDashboardPage onExit={function (): void {
-      throw new Error('Function not implemented.');
-    } } />;
+    return (
+      <AdminDashboardPage
+        onExit={goToSite}
+      />
+    );
   }
 
   // ==========================================
@@ -242,9 +236,11 @@ export default function App() {
         );
 
       case 'about':
-        return <AboutPage onNavigate={function (page: Page): void {
-          throw new Error('Function not implemented.');
-        } } />;
+        return (
+          <AboutPage
+            onNavigate={handleNavigate}
+          />
+        );
 
       case 'products':
         return <ProductsPage />;
