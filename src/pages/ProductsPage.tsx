@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import {
   Droplets,
@@ -14,6 +13,8 @@ import {
   Boxes,
   Trash2,
   SprayCan,
+  Search,
+  SearchX,
 } from 'lucide-react';
 
 import { useProducts } from '@/hooks/useSupabaseData';
@@ -188,6 +189,7 @@ export default function ProductsPage() {
   const { totalItems, openCart } = useEnquiry();
 
   const [filter, setFilter] = useState<ProductFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   /*
    * Build categories automatically from products.
@@ -225,6 +227,39 @@ export default function ProductsPage() {
       {}
     );
   }, [products, categories]);
+
+  // Instant local product search — no button/API request required.
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const searchableText = [
+        product.name,
+        product.description,
+        product.category,
+        ...(Array.isArray(product.sizes) ? product.sizes : []),
+        ...(Array.isArray(product.variants) ? product.variants : []),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return searchableText.includes(query);
+    });
+  }, [products, searchQuery]);
+
+  const filteredProductsByCategory = useMemo(() => {
+    return categories.reduce<Record<string, typeof products>>((accumulator, category) => {
+      accumulator[category] = filteredProducts.filter(
+        (product) => product.category?.trim() === category
+      );
+      return accumulator;
+    }, {});
+  }, [filteredProducts, categories]);
 
   const visibleCategories = useMemo(() => {
     if (filter === 'all') {
@@ -325,6 +360,38 @@ export default function ProductsPage() {
           <div className="rounded-2xl border border-navy-100 bg-white p-3 sm:p-4 shadow-xl shadow-navy-900/10">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               
+              {/* Instant Product Search */}
+              <div className="w-full">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-navy-400" />
+                  <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="Search products by name..."
+                    aria-label="Search products by name"
+                    className="w-full rounded-xl border border-navy-200 bg-navy-50/30 py-3 pl-10 pr-11 text-sm text-navy-900 outline-none transition-all placeholder:text-navy-400 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100"
+                  />
+
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear product search"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-navy-400 transition-colors hover:bg-navy-100 hover:text-navy-700"
+                    >
+                      <SearchX className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {searchQuery.trim() && (
+                  <div className="mt-2 px-1 text-xs text-navy-500">
+                    {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+                  </div>
+                )}
+              </div>
+
               {/* Categories */}
               <div className="min-w-0 flex-1">
                 <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-navy-400">
@@ -350,7 +417,7 @@ export default function ProductsPage() {
                           : 'bg-white text-navy-500'
                       }`}
                     >
-                      {products.length}
+                      {filteredProducts.length}
                     </span>
                   </button>
 
@@ -359,7 +426,7 @@ export default function ProductsPage() {
                     const config = getCategoryConfig(category);
                     const Icon = config.icon;
                     const count =
-                      productsByCategory[category]?.length ?? 0;
+                      filteredProductsByCategory[category]?.length ?? 0;
 
                     return (
                       <button
@@ -432,7 +499,7 @@ export default function ProductsPage() {
             </div>
           </div>
         </section>
-      ) : products.length === 0 ? (
+      ) : filteredProducts.length === 0 ? (
         /* Empty state */
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="rounded-3xl border border-dashed border-navy-200 bg-navy-50/50 px-6 py-20 text-center">
@@ -441,20 +508,32 @@ export default function ProductsPage() {
             </div>
 
             <h2 className="mt-6 font-heading text-2xl font-bold text-navy-900">
-              No Products Available
+              {searchQuery.trim() ? 'No Products Found' : 'No Products Available'}
             </h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-navy-500">
-              We don't have any products available at the moment.
-              Please check back soon or contact us for more information.
+              {searchQuery.trim()
+                ? `No products match “${searchQuery.trim()}”. Try another product name.`
+                : "We don't have any products available at the moment. Please check back soon or contact us for more information."}
             </p>
+
+            {searchQuery.trim() && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                <SearchX className="h-4 w-4" />
+                Clear Search
+              </button>
+            )}
           </div>
         </section>
       ) : (
         <main>
           {visibleCategories.map((category, categoryIndex) => {
             const categoryProducts =
-              productsByCategory[category] ?? [];
+              filteredProductsByCategory[category] ?? [];
 
             if (categoryProducts.length === 0) {
               return null;
