@@ -1,6 +1,4 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Plus,
   Minus,
@@ -19,421 +17,299 @@ interface ProductCardProps {
   product: Product;
 }
 
-/**
- * Makes sure the first alphabet of the product name
- * is always uppercase.
- *
- * Example:
- * "floor cleaner" -> "Floor cleaner"
- * "fLOOR cleaner" -> "FLOOR cleaner"
- */
-const capitalizeFirstLetter = (value: string) => {
-  if (!value) return value;
+const CUSTOM_SIZE = '__custom_size__';
 
-  return value.charAt(0).toUpperCase() + value.slice(1);
-};
+const SIZE_UNITS = ['ml', 'L', 'g', 'kg', 'pcs', 'box', 'pack'];
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem, openCart } = useEnquiry();
 
-  const [size, setSize] = useState(product.sizes?.[0] ?? 'Standard');
+  const [size, setSize] = useState(
+    product.sizes[0] ?? 'Standard'
+  );
+
+  const [customSize, setCustomSize] = useState('');
+  const [customUnit, setCustomUnit] = useState('L');
+
   const [variant, setVariant] = useState(
     product.variants?.[0] ?? 'Standard'
   );
+
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [sizeError, setSizeError] = useState('');
 
   const isChemical = product.category === 'chemical';
+  const isCustomSize = size === CUSTOM_SIZE;
 
-  const productName = capitalizeFirstLetter(product.name);
+  const handleSizeChange = (newSize: string) => {
+    setSize(newSize);
+    setSizeError('');
+
+    // Clear custom size when switching back to a normal size
+    if (newSize !== CUSTOM_SIZE) {
+      setCustomSize('');
+    }
+  };
 
   const handleAdd = () => {
+    let finalSize = size;
+
+    // Validate custom size
+    if (isCustomSize) {
+      const numericSize = Number(customSize);
+
+      if (
+        !customSize.trim() ||
+        Number.isNaN(numericSize) ||
+        numericSize <= 0
+      ) {
+        setSizeError('Please enter a valid custom size.');
+        return;
+      }
+
+      finalSize = `${customSize.trim()} ${customUnit}`;
+    }
+
+    setSizeError('');
+
     addItem({
-      productName,
-      size,
+      productName: product.name,
+      size: finalSize,
       variant,
       quantity,
     });
 
     setAdded(true);
-  };
 
-  useEffect(() => {
-    if (!added) return;
-
-    const timer = window.setTimeout(() => {
+    setTimeout(() => {
       setAdded(false);
     }, 2500);
-
-    return () => window.clearTimeout(timer);
-  }, [added]);
+  };
 
   return (
-    <article
-      className="
-        group relative flex h-full flex-col overflow-hidden
-        rounded-2xl border border-slate-200/80
-        bg-white
-        shadow-[0_4px_24px_rgba(15,23,42,0.05)]
-        transition-all duration-500
-        hover:-translate-y-1
-        hover:border-slate-300
-        hover:shadow-[0_18px_45px_rgba(15,23,42,0.10)]
-      "
-    >
-      {/* =========================================================
-          TOP ACCENT
-      ========================================================= */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-brand-500 via-brand-600 to-cyan-500" />
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl">
 
-      {/* =========================================================
-          CARD CONTENT
-      ========================================================= */}
+      {/* Premium top accent */}
+      <div className="h-1 w-full bg-gradient-to-r from-brand-500 via-brand-600 to-cyan-500" />
+
       <div className="flex flex-1 flex-col p-5 sm:p-6">
 
-        {/* =======================================================
-            PRODUCT HEADER
-        ======================================================= */}
-        <div className="flex items-start gap-4">
+        {/* Product Header */}
+        <div className="flex items-start justify-between gap-4">
 
-          {/* Product Icon */}
-          <div
-            className={`
-              relative flex h-12 w-12 shrink-0 items-center justify-center
-              rounded-2xl border
-              transition-all duration-300
-              group-hover:scale-105
-              ${
-                isChemical
-                  ? 'border-violet-100 bg-violet-50 text-violet-600'
-                  : 'border-cyan-100 bg-cyan-50 text-cyan-600'
-              }
-            `}
-          >
-            {isChemical ? (
-              <Sparkles className="h-5 w-5" />
-            ) : (
-              <Package className="h-5 w-5" />
-            )}
-
-            {/* Small status dot */}
-            <span
-              className={`
-                absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full
-                ring-2 ring-white
-                ${
-                  isChemical
-                    ? 'bg-violet-500'
-                    : 'bg-cyan-500'
-                }
-              `}
-            />
-          </div>
-
-          {/* Product Title */}
           <div className="min-w-0 flex-1">
-
-            {/* Category */}
             <div className="mb-2 flex items-center gap-2">
 
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                {isChemical ? (
+                  <Sparkles className="h-4.5 w-4.5" />
+                ) : (
+                  <Package className="h-4.5 w-4.5" />
+                )}
+              </div>
+
               <span
-                className={`
-                  inline-flex items-center rounded-full
-                  px-2.5 py-1
-                  text-[9px] font-extrabold uppercase
-                  tracking-[0.14em]
-                  ${
-                    isChemical
-                      ? 'bg-violet-50 text-violet-700 ring-1 ring-violet-100'
-                      : 'bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100'
-                  }
-                `}
+                className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                  isChemical
+                    ? 'bg-violet-50 text-violet-700 ring-1 ring-violet-100'
+                    : 'bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100'
+                }`}
               >
                 {isChemical ? 'Chemical' : 'Disposable'}
               </span>
 
             </div>
 
-            <h3
-              className="
-                font-heading
-                text-[17px] font-bold leading-snug
-                tracking-[-0.01em]
-                text-slate-900
-                transition-colors duration-300
-                group-hover:text-brand-700
-                sm:text-lg
-              "
-            >
-              {productName}
+            <h3 className="font-heading text-lg font-bold leading-snug text-slate-900 transition-colors group-hover:text-brand-700 sm:text-xl">
+              {product.name}
             </h3>
           </div>
 
-          {/* Desktop Package Icon */}
-          <div
-            className="
-              hidden h-10 w-10 shrink-0
-              items-center justify-center
-              rounded-xl border border-slate-100
-              bg-slate-50
-              text-slate-400
-              transition-all duration-300
-              group-hover:border-brand-100
-              group-hover:bg-brand-50
-              group-hover:text-brand-500
-              sm:flex
-            "
-          >
-            <Package className="h-[18px] w-[18px]" />
+          {/* Premium product icon */}
+          <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-400 sm:flex">
+            <Package className="h-5 w-5" />
           </div>
+
         </div>
 
-        {/* =======================================================
-            DESCRIPTION
-        ======================================================= */}
+        {/* Description */}
         {product.description && (
-          <p
-            className="
-              mt-4 line-clamp-2
-              text-[13px] leading-6
-              text-slate-500
-            "
-          >
+          <p className="mt-4 line-clamp-2 text-sm leading-relaxed text-slate-500">
             {product.description}
           </p>
         )}
 
-        {/* =======================================================
-            DIVIDER
-        ======================================================= */}
-        <div className="my-5 h-px bg-slate-100" />
+        {/* Divider */}
+        <div className="my-5 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
 
-        {/* =======================================================
-            SIZE
-        ======================================================= */}
+        {/* Size Selector */}
         <div>
-          <div className="mb-2.5 flex items-center justify-between">
 
-            <div className="flex items-center gap-2">
-              <span
-                className="
-                  flex h-7 w-7 items-center justify-center
-                  rounded-lg bg-brand-50 text-brand-600
-                "
-              >
-                <Ruler className="h-3.5 w-3.5" />
-              </span>
+          <div className="mb-2 flex items-center gap-2">
+            <Ruler className="h-4 w-4 text-brand-600" />
 
-              <span
-                className="
-                  text-[10px] font-extrabold
-                  uppercase tracking-[0.13em]
-                  text-slate-500
-                "
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+              Available Size
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+
+            {/* Existing sizes */}
+            {product.sizes.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => handleSizeChange(s)}
+                className={`rounded-xl border px-3.5 py-2 text-sm font-semibold transition-all duration-200 ${
+                  size === s
+                    ? 'border-brand-600 bg-brand-600 text-white shadow-md shadow-brand-600/20'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700'
+                }`}
               >
-                Available Size
-              </span>
-            </div>
+                {s}
+              </button>
+            ))}
+
+            {/* Custom Size */}
+            <button
+              type="button"
+              onClick={() => handleSizeChange(CUSTOM_SIZE)}
+              className={`rounded-xl border px-3.5 py-2 text-sm font-semibold transition-all duration-200 ${
+                isCustomSize
+                  ? 'border-brand-600 bg-brand-600 text-white shadow-md shadow-brand-600/20'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700'
+              }`}
+            >
+              Custom Size
+            </button>
 
           </div>
 
-          {product.sizes.length <= 1 ? (
-            <div
-              className="
-                flex min-h-10 items-center
-                rounded-xl border border-slate-200
-                bg-slate-50/70 px-3.5
-              "
-            >
-              <span className="text-sm font-semibold text-slate-700">
-                {product.sizes[0] ?? 'Standard'}
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {product.sizes.map((s) => {
-                const selected = size === s;
+          {/* Custom Size Input */}
+          {isCustomSize && (
+            <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50/50 p-3">
 
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setSize(s)}
-                    className={`
-                      rounded-lg border
-                      px-3.5 py-2
-                      text-xs font-bold
-                      transition-all duration-200
-                      ${
-                        selected
-                          ? `
-                            border-brand-600
-                            bg-brand-600
-                            text-white
-                            shadow-sm
-                            shadow-brand-600/20
-                          `
-                          : `
-                            border-slate-200
-                            bg-white
-                            text-slate-600
-                            hover:border-brand-300
-                            hover:bg-brand-50
-                            hover:text-brand-700
-                          `
-                      }
-                    `}
-                  >
-                    {s}
-                  </button>
-                );
-              })}
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                Enter Custom Size
+              </label>
+
+              <div className="flex gap-2">
+
+                {/* Number Input */}
+                <input
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  value={customSize}
+                  onChange={(e) => {
+                    setCustomSize(e.target.value);
+                    setSizeError('');
+                  }}
+                  placeholder="e.g. 12"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                />
+
+                {/* Unit Selector */}
+                <select
+                  value={customUnit}
+                  onChange={(e) => setCustomUnit(e.target.value)}
+                  className="w-24 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                >
+                  {SIZE_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+
+              </div>
+
+              {/* Error */}
+              {sizeError && (
+                <p className="mt-2 text-xs font-semibold text-red-600">
+                  {sizeError}
+                </p>
+              )}
+
+              <p className="mt-2 text-[11px] text-slate-500">
+                Enter the exact size you require.
+              </p>
+
             </div>
           )}
+
         </div>
 
-        {/* =======================================================
-            VARIANT
-        ======================================================= */}
+        {/* Variant Selector */}
         {product.variants && product.variants.length > 0 && (
           <div className="mt-4">
 
-            <div className="mb-2.5 flex items-center gap-2">
+            <div className="mb-2 flex items-center gap-2">
+              <Layers3 className="h-4 w-4 text-brand-600" />
 
-              <span
-                className="
-                  flex h-7 w-7 items-center justify-center
-                  rounded-lg bg-brand-50 text-brand-600
-                "
-              >
-                <Layers3 className="h-3.5 w-3.5" />
-              </span>
-
-              <span
-                className="
-                  text-[10px] font-extrabold
-                  uppercase tracking-[0.13em]
-                  text-slate-500
-                "
-              >
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
                 Variant
-              </span>
-
+              </label>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {product.variants.map((v) => {
-                const selected = variant === v;
 
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setVariant(v)}
-                    className={`
-                      rounded-lg border
-                      px-3.5 py-2
-                      text-xs font-bold
-                      transition-all duration-200
-                      ${
-                        selected
-                          ? `
-                            border-brand-600
-                            bg-brand-600
-                            text-white
-                            shadow-sm
-                            shadow-brand-600/20
-                          `
-                          : `
-                            border-slate-200
-                            bg-white
-                            text-slate-600
-                            hover:border-brand-300
-                            hover:bg-brand-50
-                            hover:text-brand-700
-                          `
-                      }
-                    `}
-                  >
-                    {v}
-                  </button>
-                );
-              })}
+              {product.variants.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setVariant(v)}
+                  className={`rounded-xl border px-3.5 py-2 text-sm font-semibold transition-all duration-200 ${
+                    variant === v
+                      ? 'border-brand-600 bg-brand-600 text-white shadow-md shadow-brand-600/20'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700'
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+
             </div>
+
           </div>
         )}
 
-        {/* =======================================================
-            QUANTITY
-        ======================================================= */}
+        {/* Quantity */}
         <div className="mt-5">
 
-          <div className="mb-2.5 flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between">
 
             <div className="flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4 text-brand-600" />
 
-              <span
-                className="
-                  flex h-7 w-7 items-center justify-center
-                  rounded-lg bg-brand-50 text-brand-600
-                "
-              >
-                <ShoppingCart className="h-3.5 w-3.5" />
-              </span>
-
-              <span
-                className="
-                  text-[10px] font-extrabold
-                  uppercase tracking-[0.13em]
-                  text-slate-500
-                "
-              >
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
                 Quantity
-              </span>
-
+              </label>
             </div>
 
-            <span className="text-[10px] font-semibold text-slate-400">
+            <span className="text-xs font-medium text-slate-400">
               Units
             </span>
 
           </div>
 
-          <div
-            className="
-              inline-flex items-center
-              overflow-hidden rounded-xl
-              border border-slate-200
-              bg-slate-50
-            "
-          >
+          <div className="flex w-fit items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+
             <button
               type="button"
               onClick={() =>
                 setQuantity((current) => Math.max(1, current - 1))
               }
               disabled={quantity <= 1}
-              className="
-                flex h-10 w-10 items-center justify-center
-                text-slate-500
-                transition-all
-                hover:bg-white hover:text-brand-600
-                disabled:cursor-not-allowed
-                disabled:opacity-30
-              "
+              className="flex h-11 w-11 items-center justify-center text-slate-600 transition-colors hover:bg-white hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
               aria-label="Decrease quantity"
             >
-              <Minus className="h-3.5 w-3.5" />
+              <Minus className="h-4 w-4" />
             </button>
 
-            <div
-              className="
-                flex h-10 min-w-12
-                items-center justify-center
-                border-x border-slate-200
-                bg-white
-              "
-            >
+            <div className="flex h-11 min-w-14 items-center justify-center border-x border-slate-200 bg-white">
               <span className="text-sm font-bold text-slate-900">
                 {quantity}
               </span>
@@ -444,25 +320,20 @@ export default function ProductCard({ product }: ProductCardProps) {
               onClick={() =>
                 setQuantity((current) => current + 1)
               }
-              className="
-                flex h-10 w-10 items-center justify-center
-                text-slate-500
-                transition-all
-                hover:bg-white hover:text-brand-600
-              "
+              className="flex h-11 w-11 items-center justify-center text-slate-600 transition-colors hover:bg-white hover:text-brand-600"
               aria-label="Increase quantity"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
             </button>
+
           </div>
+
         </div>
 
-        {/* Push CTA to bottom */}
+        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* =======================================================
-            CTA
-        ======================================================= */}
+        {/* Add To Enquiry Button */}
         <div className="mt-6">
 
           <button
@@ -474,11 +345,13 @@ export default function ProductCard({ product }: ProductCardProps) {
                 : 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-lg shadow-brand-600/20 hover:-translate-y-0.5 hover:from-brand-700 hover:to-brand-800 hover:shadow-xl hover:shadow-brand-600/25'
             }`}
           >
+
             {added ? (
               <>
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20">
                   <Check className="h-4 w-4" />
                 </span>
+
                 <span>Added to Enquiry</span>
               </>
             ) : (
@@ -486,10 +359,13 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15">
                   <ShoppingCart className="h-4 w-4" />
                 </span>
+
                 <span>Add to Enquiry</span>
+
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
               </>
             )}
+
           </button>
 
           {/* View Cart */}
@@ -503,27 +379,14 @@ export default function ProductCard({ product }: ProductCardProps) {
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           )}
+
         </div>
+
       </div>
 
-      {/* =========================================================
-          BOTTOM HOVER ACCENT
-      ========================================================= */}
-      <div
-        className="
-          pointer-events-none absolute
-          bottom-0 left-1/2
-          h-0.5 w-0
-          -translate-x-1/2
-          rounded-full
-          bg-gradient-to-r
-          from-brand-500 to-cyan-500
-          opacity-0
-          transition-all duration-500
-          group-hover:w-1/2
-          group-hover:opacity-100
-        "
-      />
-    </article>
+      {/* Bottom hover glow */}
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-1 w-0 -translate-x-1/2 rounded-full bg-brand-500 opacity-0 transition-all duration-500 group-hover:w-1/2 group-hover:opacity-100" />
+
+    </div>
   );
 }
